@@ -9,3 +9,4 @@ django-phonenumber-field
 phonenumbers
 gunicorn
 dj-database-url
+psycopg[binary]
