@@ -61,6 +61,11 @@ INSTALLED_APPS = [
     'corsheaders'
 
 ]
+CSRF_TRUSTED_ORIGINS = [
+    "https://*.up.railway.app",
+]
+
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 AUTH_USER_MODEL = 'Users.User'
 
