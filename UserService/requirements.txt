@@ -7,3 +7,4 @@ PyJWT
 pytz
 django-phonenumber-field
 phonenumbers
+gunicorn
