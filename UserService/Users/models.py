@@ -37,10 +37,13 @@ class Location(models.Model):
     landmark = models.CharField(max_length=30)
     pin_location = models.CharField(max_length=100)
     zip_code = models.PositiveSmallIntegerField()
-    deleted_at=models.DateTimeField()
+    deleted_at=models.DateTimeField(null=True, blank=True)
     created_at=models.DateTimeField(auto_now_add=True)
     created_by=models.ForeignKey('User', on_delete=models.SET_NULL, null=True, related_name="location_creations")
     deleted_by= models.ForeignKey('User', null= True, blank = True, related_name="location_deletions", on_delete=models.SET_NULL)
+
+    def __str__(self):
+        return f"{self.house_number} {self.street_number}, {self.landmark}"
 
 
 class User(AbstractUser):
