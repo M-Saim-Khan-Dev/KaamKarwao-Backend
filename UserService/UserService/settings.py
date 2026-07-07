@@ -34,6 +34,7 @@ ALLOWED_HOSTS = ['*']
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES" : (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
+        "rest_framework.authentication.SessionAuthentication",
     ),
     "DEFAULT_PERMISSION_CLASSES" : (
         "rest_framework.permissions.IsAuthenticated",
@@ -45,7 +46,7 @@ SIMPLE_JWT = {
     "REFRESH_TOKEN_LIFETIME" : timedelta(days=1),
 }
 
-
+RABBITMQ_URL = os.environ.get('RABBITMQ_URL', 'amqp://guest:guest@localhost/')
 # Application definition
 
 INSTALLED_APPS = [
@@ -66,7 +67,7 @@ CSRF_TRUSTED_ORIGINS = [
 ]
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-
+RABBITMQ_URL = os.environ.get('RABBITMQ_URL', 'amqp://guest:guest@localhost/')
 AUTH_USER_MODEL = 'Users.User'
 
 MIDDLEWARE = [
@@ -153,3 +154,6 @@ USE_TZ = True
 STATIC_URL = 'static/'
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'

@@ -17,17 +17,15 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-from Users.views import CreateUserView,CreateLocationView,CurrentUserView, CreateUserTypeView, CreateCountryView, CreateCityView, CreateAreaView
+from Users.views import CreateUserView,CurrentUserView, CreateUserTypeView,UpdateUserView,UpdateUserImageView
 urlpatterns = [
     path('admin/', admin.site.urls),
     path("app/register/user/",CreateUserView.as_view(),name = 'register'),
     path("app/user/token/",TokenObtainPairView.as_view(),name = 'get_token'),
     path("app/user/token/refresh/",TokenRefreshView.as_view(),name = 'refresh-token'),
-    path('app/register/location/', CreateLocationView.as_view(), name='create-location'),
     path('app/register/user_type/', CreateUserTypeView.as_view(), name='create-type'),
-    path('app/register/area/', CreateAreaView.as_view(), name='create-area'),
-    path('app/register/city/', CreateCityView.as_view(), name='create-city'),
-    path('app/register/country/', CreateCountryView.as_view(), name='create-country'),
     path('me/', CurrentUserView.as_view(), name='current-user'),
+    path('app/user/update/', UpdateUserView.as_view(), name='update-user'),
+    path('app/user/update/image', UpdateUserImageView.as_view(), name='update-image'),
     
 ]
