@@ -31,19 +31,31 @@ class UserLoginView(APIView):
     permission_classes = [AllowAny]
 
     def post (self, request):
-        email = request.data.get('email')
+        phone_number = request.data.get('phone_number')
         password= request.data.get('password')
 
-        if not email or not password:
-            return Response({"error": "Email and Password is Required"}, status=status.HTTP_400_BAD_REQUEST)
-        
-        user = authenticate(request,username=email,password=password)
+        if not phone_number or not password:
+            return Response({"error": "Phone number and Password is Required"}, status=status.HTTP_400_BAD_REQUEST)
 
-        if user is None:
+        if not phone_number.startswith('+'):
+            phone_number = '+' + phone_number
+
+        try:
+            user = User.objects.get(phone_number=phone_number)
+        except User.DoesNotExist:
+            return Response({"error": "Invalid Credentials"}, status= status.HTTP_401_UNAUTHORIZED)
+        
+        if not user.check_password(password):
             return Response({"error": "Invalid Credentials"}, status=status.HTTP_401_UNAUTHORIZED)
         
+        if user.deleted_at is not None:
+            return Response({"error": "This account has been deleted"}, status=status.HTTP_401_UNAUTHORIZED)
+
+        if not user.is_active:
+            return Response({"error": "This account is inactive"}, status=status.HTTP_401_UNAUTHORIZED)
+        
         serializer = UserSerializer(user)
-        return Response(serializer.data, status = status.HTTP_200_OK)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 class CreateUserTypeView(generics.CreateAPIView):
     queryset = UserType.objects.all()
