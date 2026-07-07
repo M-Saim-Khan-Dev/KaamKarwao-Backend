@@ -21,6 +21,7 @@ class UserSerializer(serializers.ModelSerializer):
             "gender",
             "overall_rating",
             "is_verified",
+            "password",
             "usertype_id",
             "location_id",
             "location_zip_code",
