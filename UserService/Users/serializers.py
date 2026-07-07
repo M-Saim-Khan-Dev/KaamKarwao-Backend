@@ -7,7 +7,6 @@ class UserTypeSerializer(serializers.ModelSerializer):
         fields = ['id', 'name']
 
 class UserSerializer(serializers.ModelSerializer):
-        user_type = UserTypeSerializer(read_only = True)
         usertype_id = serializers.PrimaryKeyRelatedField(
         queryset=UserType.objects.all(),source='user_type',write_only=True
     )
