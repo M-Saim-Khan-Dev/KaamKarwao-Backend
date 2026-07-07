@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from rest_framework import generics
 from .serializers import UserTypeSerializer,UserSerializer,UpdateImageSerializer
 from rest_framework.permissions import IsAuthenticated,AllowAny, IsAdminUser
@@ -12,17 +12,19 @@ class CreateUserView(generics.CreateAPIView):
     serializer_class= UserSerializer
     permission_classes=[AllowAny]
 
-class CurrentUserView(APIView):
+class SearchUserByPhoneView(APIView):
     permission_classes = [IsAuthenticated]
-    
-    def get(self,request):
-        user = request.user
+
+    def get(self,request, phone_number):
+        if not phone_number.startswith('+'):
+            phone_number = '+' + phone_number
+        user=get_object_or_404(User, phone_number=phone_number)
         return Response({
-        "id": user.id,
-        "user_type": user.user_type.name if user.user_type else None,
-        "location_id": user.location_id,
-        "location_zip_code": user.location_zip_code,
-    })
+            "id": user.id,
+            "user_type": user.user_type.name if user.user_type else None,
+            "location_id": user.location_id,
+            "location_zip_code": user.location_zip_code,
+        })
 
 class CreateUserTypeView(generics.CreateAPIView):
     queryset = UserType.objects.all()
