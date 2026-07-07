@@ -15,6 +15,7 @@ class User(AbstractUser):
     phone_number = PhoneNumberField(null=True)
     username = None
     USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = []
     email= models.EmailField(unique= True)
     location_id = models.IntegerField(null=True, blank=True)
     location_zip_code = models.PositiveSmallIntegerField(null=True, blank=True)
