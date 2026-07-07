@@ -14,6 +14,7 @@ class User(AbstractUser):
     last_name = models.CharField(max_length=100)
     phone_number = PhoneNumberField(null=True)
     username = None
+    USERNAME_FIELD = 'email'
     email= models.EmailField(unique= True)
     location_id = models.IntegerField(null=True, blank=True)
     location_zip_code = models.PositiveSmallIntegerField(null=True, blank=True)
