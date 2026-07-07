@@ -17,7 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-from Users.views import CreateUserView,SearchUserByPhoneView, CreateUserTypeView,UpdateUserView,UpdateUserImageView
+from Users.views import CreateUserView,SearchUserByPhoneView, CreateUserTypeView,UpdateUserView,UpdateUserImageView,UserLoginView
 urlpatterns = [
     path('app/admin/', admin.site.urls),
     path("app/register/user/",CreateUserView.as_view(),name = 'register'),
@@ -27,5 +27,6 @@ urlpatterns = [
     path('app/user/<str:phone_number>/', SearchUserByPhoneView.as_view(), name='user-by-phone'),
     path('app/user/update/', UpdateUserView.as_view(), name='update-user'),
     path('app/user/update/image', UpdateUserImageView.as_view(), name='update-image'),
+    path('app/user/login/', UserLoginView.as_view(), name='login'),
     
 ]
