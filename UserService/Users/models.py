@@ -35,7 +35,7 @@ class UserType(models.Model):
 class User(AbstractUser):
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
-    phone_number = PhoneNumberField(null=True)
+    phone_number = PhoneNumberField(null=True, unique=True)
     objects = CustomUserManager()
     username = None
     USERNAME_FIELD = 'email'
