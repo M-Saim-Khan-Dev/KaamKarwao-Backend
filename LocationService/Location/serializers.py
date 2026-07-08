@@ -33,6 +33,7 @@ class LocationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Location
         fields = [
+            "id",
             "house_number",
             "street_number",
             "landmark",
