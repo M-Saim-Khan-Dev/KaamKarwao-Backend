@@ -1,3 +1,4 @@
+"""
 import pika
 import json
 from django.conf import settings
@@ -32,3 +33,4 @@ def start_consuming():
     channel.basic_consume(queue="user_service_location_updates", on_message_callback=callback)
     print("Waiting for location events. To exit press CTRL+C")
     channel.start_consuming()
+    """

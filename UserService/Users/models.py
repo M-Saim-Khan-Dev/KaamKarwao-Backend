@@ -42,7 +42,7 @@ class User(AbstractUser):
     REQUIRED_FIELDS = []
     email= models.EmailField(unique= True)
     location_id = models.IntegerField(null=True, blank=True)
-    location_zip_code = models.PositiveSmallIntegerField(null=True, blank=True)
+    location_zip_code = models.PositiveIntegerField(null=True, blank=True)
     deleted_at=models.DateTimeField(null=True, blank=True)
     created_at=models.DateTimeField(auto_now_add=True)
     created_by=models.ForeignKey('self', on_delete=models.SET_NULL, null=True, related_name="creations")

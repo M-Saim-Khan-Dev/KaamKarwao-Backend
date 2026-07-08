@@ -1,3 +1,4 @@
+"""
 import pika
 import json
 from django.conf import settings
@@ -30,3 +31,4 @@ def publish_location_updated(location):
 
     )
     connection.close()
+    """
