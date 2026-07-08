@@ -27,7 +27,7 @@ class Location(models.Model):
     country = models.ForeignKey('Country', on_delete=models.SET_NULL, null = True, related_name = 'locations')
     landmark = models.CharField(max_length=30)
     pin_location = models.CharField(max_length=100)
-    zip_code = models.PositiveIntegerField()
+    zip_code = models.IntegerField(max_length=10)
     deleted_at=models.DateTimeField(null=True, blank=True)
     created_at=models.DateTimeField(auto_now_add=True)
     created_by_id=models.IntegerField(null=True, blank=True)
