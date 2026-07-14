@@ -1,0 +1,16 @@
+asgiref
+Django
+django-cors-headers
+djangorestframework
+djangorestframework-simplejwt
+PyJWT
+pytz
+django-phonenumber-field
+phonenumbers
+gunicorn
+dj-database-url
+psycopg[binary]
+pika
+pillow
+supabase
+python-dotenv

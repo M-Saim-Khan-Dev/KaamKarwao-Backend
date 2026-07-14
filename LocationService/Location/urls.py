@@ -1,5 +1,3 @@
-from django.contrib import admin
-from django.urls import path
 from .views import CreateLocationView,CreateCountryView, CreateCityView, CreateAreaView
 from rest_framework.routers import DefaultRouter
 

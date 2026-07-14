@@ -1,31 +1,24 @@
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth import authenticate
 from rest_framework import generics, status
-from .serializers import UserTypeSerializer,UserSerializer,UpdateImageSerializer
-from rest_framework.permissions import IsAuthenticated,AllowAny, IsAdminUser
+from .serializers import UserSerializer,UpdateImageSerializer,UpdateUserIsVerifiedSerializer
+from rest_framework.permissions import IsAuthenticated,AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from .models import UserType, User
+from .models import User
+from rest_framework_simplejwt.tokens import RefreshToken
 # Create your views here.
+
+def get_tokens_for_user(user):
+    refresh = RefreshToken.for_user(user)
+    refresh["is_verified"] = user.is_verified
+    refresh["is_staff"] = user.is_staff 
+    return refresh
 
 class CreateUserView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class= UserSerializer
     permission_classes=[AllowAny]
-
-class SearchUserByPhoneView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self,request, phone_number):
-        if not phone_number.startswith('+'):
-            phone_number = '+' + phone_number
-        user=get_object_or_404(User, phone_number=phone_number)
-        return Response({
-            "id": user.id,
-            "user_type": user.user_type.name if user.user_type else None,
-            "location_id": user.location_id,
-            "location_zip_code": user.location_zip_code,
-        })
     
 class UserLoginView(APIView):
     permission_classes = [AllowAny]
@@ -54,13 +47,13 @@ class UserLoginView(APIView):
         if not user.is_active:
             return Response({"error": "This account is inactive"}, status=status.HTTP_401_UNAUTHORIZED)
         
+        refresh = get_tokens_for_user(user)
         serializer = UserSerializer(user)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-class CreateUserTypeView(generics.CreateAPIView):
-    queryset = UserType.objects.all()
-    serializer_class = UserTypeSerializer
-    permission_classes = [IsAdminUser]
+        return Response({
+            "user": serializer.data,
+            "access": str(refresh.access_token),
+            "refresh": str(refresh),
+        }, status=status.HTTP_200_OK)
 
 class UpdateUserView(generics.UpdateAPIView):
     queryset = User.objects.all()
@@ -68,11 +61,21 @@ class UpdateUserView(generics.UpdateAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_object(self):
-        return self.request.user
+        return get_object_or_404(User, id=self.request.user.id)
     
 class UpdateUserImageView(generics.UpdateAPIView):
     serializer_class = UpdateImageSerializer
     permission_classes = [IsAuthenticated]
 
     def get_object(self):
-        return self.request.user
+        return get_object_or_404(User, id=self.request.user.id)
+    
+class UpdateUserVerifiedView(generics.RetrieveUpdateAPIView):
+    queryset = User.objects.all()
+    serializer_class = UpdateUserIsVerifiedSerializer
+    permission_classes = [AllowAny]
+    lookup_field = 'pk'
+
+    def get_object(self):
+        pk = self.kwargs.get('pk')
+        return get_object_or_404(User, id=pk)

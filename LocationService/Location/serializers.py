@@ -36,14 +36,16 @@ class LocationSerializer(serializers.ModelSerializer):
             "id",
             "house_number",
             "street_number",
-            "landmark",
-            "pin_location",
+            "formatted_address",
+            "latitude",
+            "longitude",
             "zip_code",
             "area",
             "city",
             "country", 
             "area_id",
             "city_id",
-            "country_id" 
+            "country_id",
+            "created_at"
         ]
 

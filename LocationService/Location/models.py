@@ -25,13 +25,14 @@ class Location(models.Model):
     area = models.ForeignKey('Area', on_delete=models.SET_NULL, null = True, related_name = 'locations')
     city = models.ForeignKey('City', on_delete=models.SET_NULL, null = True, related_name = 'locations')
     country = models.ForeignKey('Country', on_delete=models.SET_NULL, null = True, related_name = 'locations')
-    landmark = models.CharField(max_length=30)
-    pin_location = models.CharField(max_length=100)
-    zip_code = models.IntegerField(max_length=10)
+    formatted_address = models.CharField(max_length=30)
+    latitude = models.DecimalField(max_digits=10 , decimal_places=7, null=True, blank=True)
+    longitude = models.DecimalField(max_digits=10 , decimal_places=7,null=True, blank=True)
+    zip_code = models.IntegerField()
     deleted_at=models.DateTimeField(null=True, blank=True)
     created_at=models.DateTimeField(auto_now_add=True)
     created_by_id=models.IntegerField(null=True, blank=True)
     deleted_by_id= models.IntegerField(null=True, blank=True)
 
     def __str__(self):
-        return f"{self.house_number} {self.street_number}, {self.landmark}"
+        return f"{self.house_number} {self.street_number}, {self.formatted_address}"

@@ -1,15 +1,7 @@
-from .models import User, UserType
+from .models import User
 from rest_framework import serializers
 
-class UserTypeSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = UserType
-        fields = ['id', 'name']
-
 class UserSerializer(serializers.ModelSerializer):
-        usertype_id = serializers.PrimaryKeyRelatedField(
-        queryset=UserType.objects.all(),source='user_type',write_only=True
-    )
         class Meta:
             model = User
             fields=[
@@ -28,6 +20,8 @@ class UserSerializer(serializers.ModelSerializer):
             "created_at",
             ]
             extra_kwargs = {"password" : {"write_only" : True}}
+        WORKER_TYPE_ID = 3
+        WORKER_ONLY_FIELDS = ["daily_earning", "weekly_earning", "total_earning", "jobs_done"]
 
         def create(self, validated_data):
             password = validated_data.pop("password")
@@ -36,8 +30,20 @@ class UserSerializer(serializers.ModelSerializer):
             user.set_password(password)
             user.save()
             return user
+        
+        def to_representation(self, instance):
+           data = super().to_representation(instance)
+           if instance.usertype_id == self.WORKER_TYPE_ID:
+            for field in self.WORKER_ONLY_FIELDS:
+               data[field] = getattr(instance, field)
+           return data
 
 class UpdateImageSerializer(serializers.ModelSerializer):
      class Meta:
           model=User
-          fields = ["Image"]
+          fields = ["image"]
+
+class UpdateUserIsVerifiedSerializer(serializers.ModelSerializer):
+     class Meta:
+          model = User
+          fields = ["is_verified"]
