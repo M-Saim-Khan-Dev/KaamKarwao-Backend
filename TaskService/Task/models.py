@@ -15,3 +15,4 @@ class Task(models.Model):
     payment_preference_id = models.IntegerField()
     accurately_estimated = models.IntegerField()
     category_id = models.IntegerField()
+    worker_id = models.IntegerField(null=True, blank=True)

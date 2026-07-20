@@ -16,8 +16,9 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-from Users.views import CreateUserView,UpdateUserView,UpdateUserImageView,UserLoginView,UpdateUserVerifiedView
+from Users.views import CreateUserView,UpdateUserView,UpdateUserImageView,UserLoginView,UpdateUserVerifiedView,GetUserInfoView
 urlpatterns = [
     path('app/admin/', admin.site.urls),
     path("app/register/user/",CreateUserView.as_view(),name = 'register'),
@@ -26,5 +27,8 @@ urlpatterns = [
     path('app/user/update/', UpdateUserView.as_view(), name='update-user'),
     path('app/user/update/image/', UpdateUserImageView.as_view(), name='update-image'),
     path('app/user/login/', UserLoginView.as_view(), name='login'),
-    path('app/user/<int:pk>/verify/', UpdateUserVerifiedView.as_view(), name='update-user-verified')
+    path('app/user/verify/<int:pk>/', UpdateUserVerifiedView.as_view(), name='update-user-verified'),
+    path('schema/', SpectacularAPIView.as_view(), name='schema'),
+    path('schema/swagger-ui/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+    path('app/user/info/<int:pk>/', GetUserInfoView.as_view(), name='user-info'),
 ]

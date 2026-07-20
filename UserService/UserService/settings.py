@@ -15,10 +15,14 @@ from dotenv import load_dotenv
 from datetime import timedelta
 import os
 
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+load_dotenv(BASE_DIR / ".env") 
 load_dotenv(BASE_DIR.parent / ".env")
 
+SUPABASE_URL = os.environ.get("SUPABASE_URL")
+SUPABASE_SERVICE_KEY = os.environ.get("SUPABASE_SERVICE_KEY")
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
@@ -39,6 +43,15 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES" : (
         "rest_framework.permissions.IsAuthenticated",
     ),
+    "DEFAULT_SCHEMA_CLASS": 
+        "drf_spectacular.openapi.AutoSchema",
+}
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "User Service API",
+    "DESCRIPTION": "Handles User Creation, Update, Deletion, Permissions and Verification ",
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
 }
 
 SIMPLE_JWT = {
@@ -61,7 +74,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'Users',
     'rest_framework',
-    'corsheaders'
+    'corsheaders',
+    'drf_spectacular',
 
 ]
 CSRF_TRUSTED_ORIGINS = [

@@ -18,6 +18,7 @@ class AttachmentSerializer(serializers.ModelSerializer):
             "created_at"
         ]
 
+  #allowing only certain file types to be transferred
     def validate_file(self,value):
         max_size_mb = 5
         if value.size > max_size_mb * 1024 * 1024:

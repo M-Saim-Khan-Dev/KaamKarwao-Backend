@@ -1,24 +1,39 @@
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth import authenticate
 from rest_framework import generics, status
-from .serializers import UserSerializer,UpdateImageSerializer,UpdateUserIsVerifiedSerializer
+from .serializers import UserSerializer,UpdateImageSerializer,UpdateUserIsVerifiedSerializer,UserInfoSerializer
+from django.utils import timezone
 from rest_framework.permissions import IsAuthenticated,AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from .models import User
 from rest_framework_simplejwt.tokens import RefreshToken
+from drf_spectacular.utils import extend_schema
+from .supabase_client import upload_to_supabase
+from rest_framework.parsers import MultiPartParser, FormParser
+
 # Create your views here.
 
 def get_tokens_for_user(user):
     refresh = RefreshToken.for_user(user)
     refresh["is_verified"] = user.is_verified
     refresh["is_staff"] = user.is_staff 
+    refresh["usertype_id"] = user.usertype_id
     return refresh
 
+@extend_schema(
+        summary="Create a User",
+        description="Creates the User Using a valid locationid and sets the user to be verified",
+    )
 class CreateUserView(generics.CreateAPIView):
-    queryset = User.objects.all()
-    serializer_class= UserSerializer
+    queryset = User.objects.filter(deleted_at__isnull=True)
+    serializer_class= UserSerializer    
     permission_classes=[AllowAny]
+    
+@extend_schema(
+        summary="Logs in a User",
+        description="Logs in the User Using a valid Phone number and Password",
+    )
     
 class UserLoginView(APIView):
     permission_classes = [AllowAny]
@@ -55,23 +70,51 @@ class UserLoginView(APIView):
             "refresh": str(refresh),
         }, status=status.HTTP_200_OK)
 
+@extend_schema(
+        summary="Updates a User",
+        description="Updates any field of the User",
+    )
+
 class UpdateUserView(generics.UpdateAPIView):
-    queryset = User.objects.all()
+    queryset = User.objects.filter(deleted_at__isnull=True)
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]
 
     def get_object(self):
         return get_object_or_404(User, id=self.request.user.id)
     
+@extend_schema(
+        summary="Updates the User Profile Picture",
+    )
+
+
 class UpdateUserImageView(generics.UpdateAPIView):
     serializer_class = UpdateImageSerializer
     permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
 
     def get_object(self):
         return get_object_or_404(User, id=self.request.user.id)
     
+    def update(self,request, *args,**kwargs):
+        instance= self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial = True)
+        serializer.is_valid(raise_exception= True)
+
+        file = serializer.validated_data["file"]
+        url= upload_to_supabase(file)
+
+        instance.image=url
+        instance.save()
+        return Response(UpdateImageSerializer(instance).data, status=status.HTTP_200_OK)
+    
+@extend_schema(
+        summary="Updates the User Verification",
+    )
+
+
 class UpdateUserVerifiedView(generics.RetrieveUpdateAPIView):
-    queryset = User.objects.all()
+    queryset = User.objects.filter(deleted_at__isnull=True) 
     serializer_class = UpdateUserIsVerifiedSerializer
     permission_classes = [AllowAny]
     lookup_field = 'pk'
@@ -79,3 +122,30 @@ class UpdateUserVerifiedView(generics.RetrieveUpdateAPIView):
     def get_object(self):
         pk = self.kwargs.get('pk')
         return get_object_or_404(User, id=pk)
+
+@extend_schema(
+        summary="Soft-Deletes a User",
+        description="Deletes a User by setting deleted at to now",
+    )    
+
+class DeleteUserView(generics.DestroyAPIView):
+    queryset = User.objects.filter(deleted_at__isnull=True)
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        return get_object_or_404(User, id=self.request.user.id)
+
+    def perform_destroy(self, instance):
+        instance.deleted_at = timezone.now()
+        instance.is_active = False
+        instance.save()
+
+@extend_schema(
+        summary="Get all user info using user_id",
+    )
+
+class GetUserInfoView(generics.RetrieveAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserInfoSerializer
+    permission_classes = [IsAuthenticated]
+    lookup_field = 'pk'

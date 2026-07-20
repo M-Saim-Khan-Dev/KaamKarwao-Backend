@@ -27,6 +27,15 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": (
         "rest_framework.permissions.IsAuthenticated",
     ),
+    "DEFAULT_SCHEMA_CLASS": 
+        "drf_spectacular.openapi.AutoSchema",
+}
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Attachment Service API",
+    "DESCRIPTION": "Handles Attachment CRUD",
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
 }
 
 # Quick-start development settings - unsuitable for production
@@ -52,6 +61,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'Attachment',
     'rest_framework',
+    'drf_spectacular',
 ]
 
 MIDDLEWARE = [

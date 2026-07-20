@@ -10,10 +10,12 @@ class TaskSerializer(serializers.ModelSerializer):
             'body',
             'price',
             'created_at',
+            'created_by',
             'preferred_time',
             'location_id',
             'status_id',
             'payment_preference_id',
             'accurately_estimated',
-            'category_id'
+            'category_id',
+            'worker_id', #worker id
         ]

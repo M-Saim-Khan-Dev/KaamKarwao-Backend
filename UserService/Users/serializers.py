@@ -18,32 +18,63 @@ class UserSerializer(serializers.ModelSerializer):
             "location_id",
             "location_zip_code",
             "created_at",
+            "image"
             ]
             extra_kwargs = {"password" : {"write_only" : True}}
-        WORKER_TYPE_ID = 3
-        WORKER_ONLY_FIELDS = ["daily_earning", "weekly_earning", "total_earning", "jobs_done"]
 
         def create(self, validated_data):
             password = validated_data.pop("password")
-
             user = User(**validated_data)
             user.set_password(password)
             user.save()
             return user
         
-        def to_representation(self, instance):
-           data = super().to_representation(instance)
-           if instance.usertype_id == self.WORKER_TYPE_ID:
-            for field in self.WORKER_ONLY_FIELDS:
-               data[field] = getattr(instance, field)
-           return data
+        def update(self, instance, validated_data):
+             password = validated_data.pop("password", None)
+             for attr, value in validated_data.items():
+                  setattr(instance, attr, value)
+             if password:
+                  instance.set_password(password)
+             instance.save()
+             return instance
 
 class UpdateImageSerializer(serializers.ModelSerializer):
+     file = serializers.ImageField(write_only=True, required=True)
      class Meta:
           model=User
-          fields = ["image"]
+          fields = ["image", "file"]
+          read_only_fields = ["image"]
+
+     def validate_file(self, value):
+        max_size_mb = 5
+        if value.size > max_size_mb * 1024 * 1024:
+            raise serializers.ValidationError(f"File must be under {max_size_mb}MB")
+
+        allowed_types = ["image/jpg", "image/png", "image/webp", "image/jpeg"]
+        if value.content_type not in allowed_types:
+            raise serializers.ValidationError("Only JPEG, PNG, or WEBP files are allowed")
+
+        return value
 
 class UpdateUserIsVerifiedSerializer(serializers.ModelSerializer):
      class Meta:
           model = User
           fields = ["is_verified"]
+
+
+class UserInfoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = [
+            "id",
+            "first_name",
+            "last_name",
+            "phone_number",
+            "email",
+            "location_id",
+            "gender",
+            "overall_rating",
+            "is_verified",
+            "usertype_id",
+            "image",
+        ]
