@@ -32,22 +32,25 @@ class CreateReviewView(viewsets.ModelViewSet):
         instance.deleted_at = timezone.now()
         instance.save()
 
-@extend_schema(
-        summary="Gets the number of Reviews a User has gotten",
-    )
+
 class GetUserReviewCountView(APIView):
     permission_classes = [IsAuthenticated]
 
+    @extend_schema(
+        summary="Gets the number of Reviews a User has gotten",
+    )
     def get(self, request, user_id):
         count = Review.objects.filter(user_id=user_id, deleted_at__isnull=True).count()
         return Response({"user_id": user_id, "review_count": count})
     
-@extend_schema(
-        summary="Gives User Rating According to Reviews (5 if 0 reviews)",
-    )
+
 class GetUserRatingView(APIView):
     permission_classes=[IsAuthenticated]
 
+    @extend_schema(
+        summary="Gives User Rating According to Reviews (5 if 0 reviews)",
+    )
+    
     def get(self,request,user_id):
         average_rating = Review.objects.filter(
             user_id=user_id, deleted_at__isnull=True

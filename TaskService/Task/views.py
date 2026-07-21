@@ -26,12 +26,13 @@ class CreateTaskView(viewsets.ModelViewSet):
         instance.deleted_at = timezone.now()
         instance.save()
 
+
+@extend_schema(
+        summary="Get a NonDeleted Task using the id of the user who created it",
+)
 class GetTaskByCreatedByView(generics.ListAPIView):
     serializer_class = TaskSerializer
     permission_classes = [IsAuthenticated]
-    @extend_schema(
-        summary="Get a NonDeleted Task using the id of the user who created it",
-    )
 
     def get_queryset(self):
         created_by = self.kwargs['created_by']
