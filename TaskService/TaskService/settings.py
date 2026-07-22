@@ -37,6 +37,7 @@ SPECTACULAR_SETTINGS = {
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-_&tpyanfjs2qz(fhp1z6@c3#8x6x0b!6&9ej-^m#v_al)5grrj'
+INTERNAL_SERVICE_SECRET = os.environ.get("INTERNAL_SERVICE_SECRET")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True

@@ -55,10 +55,29 @@ const taskWsProxy = createProxyMiddleware({
 
 app.use('/ws/tasks', verifyJWT, taskWsProxy);
 
+const biddingWsProxy = createProxyMiddleware({
+    target: SERVICE_URLS.BIDDING_SERVICE_URL,
+    changeOrigin: true,
+    ws: true,
+    pathRewrite: (path, req) => req.originalUrl,
+});
+
+app.use('/ws/bidding', verifyJWT, biddingWsProxy);
+
 const docsRouter = require('./docs');
 app.use('/api-docs', docsRouter);
 
 const PORT = process.env.PORT || 3000;
 const server = http.createServer(app);
-server.on('upgrade', taskWsProxy.upgrade)
+
+server.on('upgrade', (req, socket, head) => {
+    if (req.url.startsWith('/ws/tasks')) {
+        taskWsProxy.upgrade(req, socket, head);
+    } else if (req.url.startsWith('/ws/bidding')) {
+        biddingWsProxy.upgrade(req, socket, head);
+    } else {
+        socket.destroy();
+    }
+});
+
 server.listen(PORT, () => console.log(`API Gateway running on port ${PORT}`));

@@ -10,4 +10,5 @@ module.exports = {
     CONFIG_SERVICE_URL: process.env.CONFIG_SERVICE_URL || 'http://0.0.0.0:8009/',
     EARNINGS_SERVICE_URL: process.env.EARNINGS_SERVICE_URL || 'http://0.0.0.0:8010/',
     REVIEW_SERVICE_URL: process.env.REVIEW_SERVICE_URL || 'http://0.0.0.0:8011/',
+    BIDDING_SERVICE_URL: process.env.BIDDING_SERVICE_URL || 'http://127.0.0.1:8012/',
 };

@@ -34,3 +34,10 @@ class TaskConsumer(AsyncWebsocketConsumer):
             "type": "task_created",
             "task": event["task"],
         }))
+
+    async def task_deleted(self,event):
+        await self.send(text_data=json.dumps({
+            "type": "task_deleted",
+            "task_id": event["task_id"],
+            "worker_id": event["worker_id"],
+        }))

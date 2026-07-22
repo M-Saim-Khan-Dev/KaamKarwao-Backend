@@ -160,5 +160,13 @@ const routes = [
         auth: 'required',
         roles: ['Admin']
     },
+    {
+        publicPath: '/app/bidding',
+        realPath: '/bidding_service/',
+        service: 'bidding',
+        target: 'BIDDING_SERVICE_URL',
+        auth: 'required',
+        roles:['Customer', 'Worker', 'Admin']
+    },
 ];
 module.exports = [...routes].sort((a, b) => b.publicPath.length - a.publicPath.length);

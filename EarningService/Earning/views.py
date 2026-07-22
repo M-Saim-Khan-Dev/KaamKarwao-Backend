@@ -23,5 +23,5 @@ class CreateWorkerEarningView(viewsets.ModelViewSet):
         if self.request.headers.get('X-Is-Staff') == 'true':
             return WorkerEarnings.objects.all()
         worker_id = self.request.headers.get('X-User-Id')
-        return WorkerEarnings.objects.filter(worker_id=worker_id)\
+        return WorkerEarnings.objects.filter(worker_id=worker_id)
         #in the future, make it so the frontend can update/create this and not the user themselves
