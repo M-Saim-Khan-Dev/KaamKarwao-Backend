@@ -3,6 +3,7 @@ from django.db import models
 # Create your models here.
 class Area(models.Model):
     name = models.CharField(max_length=15)
+    city = models.ForeignKey('City', on_delete=models.CASCADE, null = True, related_name = 'areas')
     def __str__(self):
         return self.name
 

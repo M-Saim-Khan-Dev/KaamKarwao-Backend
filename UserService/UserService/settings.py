@@ -21,9 +21,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(Path(__file__).resolve().parent / ".env")
 load_dotenv(BASE_DIR.parent / ".env")
 
-print("ENV FILE FOUND AT:", BASE_DIR / ".env", (BASE_DIR / ".env").exists())
-print("SUPABASE_URL:", repr(os.environ.get("SUPABASE_URL")))
-
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
 SUPABASE_SERVICE_KEY = os.environ.get("SUPABASE_SERVICE_KEY")
 

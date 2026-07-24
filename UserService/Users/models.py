@@ -46,3 +46,9 @@ class User(AbstractUser):
     is_verified = models.BooleanField(default=True)
     usertype_id = models.IntegerField(null=True, blank=True)
     image = models.URLField(blank=True, null=True)
+
+    ADMIN_USERTYPE_ID = 1
+    def save(self, *args, **kwargs):
+        if self.usertype_id == self.ADMIN_USERTYPE_ID:
+            self.is_staff = True
+        super().save(*args, **kwargs)

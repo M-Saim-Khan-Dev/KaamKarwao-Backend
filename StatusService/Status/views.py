@@ -1,6 +1,6 @@
 from .serializers import StatusSerializer
 from .models import Status
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from django.utils import timezone
 from rest_framework import viewsets
 from drf_spectacular.utils import extend_schema,extend_schema_view
@@ -20,7 +20,9 @@ class CreateStatusView(viewsets.ModelViewSet):
     queryset = Status.objects.filter(deleted_at__isnull=True)
     serializer_class = StatusSerializer
     def get_permissions(self):
-        return [IsAuthenticated()]
+        if self.action in ['list', 'retrieve']:
+            return [IsAuthenticated()]
+        return [IsAdminUser()]
     
     def perform_destroy(self, instance):
         instance.deleted_at = timezone.now()

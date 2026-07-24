@@ -41,3 +41,10 @@ class TaskConsumer(AsyncWebsocketConsumer):
             "task_id": event["task_id"],
             "worker_id": event["worker_id"],
         }))
+
+    async def task_assigned(self, event):
+        await self.send(text_data=json.dumps({
+            "type": "task_assigned",
+            "task_id": event["task_id"],
+            "worker_id": event["worker_id"],
+        }))

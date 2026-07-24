@@ -3,7 +3,7 @@ from .models import Review
 from .serializers import ReviewSerializer
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from rest_framework import viewsets
+from rest_framework import viewsets, generics
 from rest_framework.views import APIView
 from django.utils import timezone
 from drf_spectacular.utils import extend_schema,extend_schema_view
@@ -32,6 +32,16 @@ class CreateReviewView(viewsets.ModelViewSet):
         instance.deleted_at = timezone.now()
         instance.save()
 
+
+class GetAllUserReviewsByIdView(generics.ListAPIView):
+    serializer_class = ReviewSerializer
+    permission_classes = [AllowAny]
+
+    def get_queryset(self):
+        user_id = self.kwargs['user_id']
+        return Review.objects.filter(
+            user_id=user_id, deleted_at__isnull=True
+        ).order_by('-created_at')
 
 class GetUserReviewCountView(APIView):
     permission_classes = [IsAuthenticated]

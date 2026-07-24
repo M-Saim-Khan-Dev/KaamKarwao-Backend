@@ -3,7 +3,7 @@ from django.contrib.auth import authenticate
 from rest_framework import generics, status
 from .serializers import UserSerializer,UpdateImageSerializer,UpdateUserIsVerifiedSerializer,UserInfoSerializer
 from django.utils import timezone
-from rest_framework.permissions import IsAuthenticated,AllowAny
+from rest_framework.permissions import IsAuthenticated,AllowAny,IsAdminUser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from .models import User
@@ -11,8 +11,10 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from drf_spectacular.utils import extend_schema
 from .supabase_client import upload_to_supabase
 from rest_framework.parsers import MultiPartParser, FormParser
+from .pagination import StandardResultsPagination
 
 # Create your views here.
+
 
 def get_tokens_for_user(user):
     refresh = RefreshToken.for_user(user)
@@ -149,3 +151,52 @@ class GetUserInfoView(generics.RetrieveAPIView):
     serializer_class = UserInfoSerializer
     permission_classes = [IsAuthenticated]
     lookup_field = 'pk'
+
+@extend_schema(
+    summary="List all users (Admin only)",
+    description="Returns a paginated list of all non-deleted users. Admin access required.",
+)
+class AdminListUsersView(generics.ListAPIView):
+    queryset = User.objects.filter(deleted_at__isnull=True).order_by('-created_at')
+    serializer_class = UserInfoSerializer
+    permission_classes = [IsAdminUser]
+    pagination_class = StandardResultsPagination
+
+@extend_schema(
+    summary="Update any user's profile (Admin only)",
+    description="Allows an admin to update any user's profile by user ID.",
+)
+class AdminUpdateUserView(generics.UpdateAPIView):
+    queryset = User.objects.filter(deleted_at__isnull=True)
+    serializer_class = UserSerializer
+    permission_classes = [IsAdminUser]
+    lookup_field = 'pk'
+
+@extend_schema(
+    summary="Soft-delete any user's profile (Admin only)",
+    description="Allows an admin to soft-delete any user by ID, recording who deleted them.",
+)
+class AdminDeleteUserView(generics.DestroyAPIView):
+    queryset = User.objects.filter(deleted_at__isnull=True)
+    permission_classes = [IsAdminUser]
+    lookup_field = 'pk'
+
+    def perform_destroy(self, instance):
+        instance.deleted_at = timezone.now()
+        instance.is_active = False
+        instance.deleted_by = self.request.user
+        instance.save()
+
+@extend_schema(exclude=True)
+class InternalUpdateRatingView(APIView):
+    permission_classes= [AllowAny]
+
+    def patch(self,request,user_id):
+        overall_rating = request.data.get("overall_rating")
+        if overall_rating is None:
+            return Response({"error": "overall_rating is required"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        user = get_object_or_404(User, id=user_id)
+        user.overall_rating = overall_rating
+        user.save()
+        return Response({"id": user.id, "overall_rating": user.overall_rating}, status=status.HTTP_200_OK)

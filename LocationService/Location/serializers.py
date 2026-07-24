@@ -1,20 +1,26 @@
 from .models import Area, Country, City, Location
 from rest_framework import serializers
 
+class CitySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = City
+        fields = ['id', 'name']
+
+
 class AreaSerializer(serializers.ModelSerializer):
+    city_id = serializers.PrimaryKeyRelatedField(
+        queryset=City.objects.all(),source='city',write_only=True
+    )
+    city = CitySerializer(read_only=True)
     class Meta:
         model = Area
-        fields = ['id', 'name']
+        fields = ['id', 'name', 'city', 'city_id']
 
 class CountrySerializer(serializers.ModelSerializer):
     class Meta:
         model = Country
         fields = ['id', 'name']
 
-class CitySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = City
-        fields = ['id', 'name']
 
 
 class LocationSerializer(serializers.ModelSerializer):

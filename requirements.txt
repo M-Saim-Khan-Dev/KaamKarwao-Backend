@@ -16,3 +16,5 @@ supabase
 python-dotenv
 drf-spectacular
 requests
+celery django-celery-beat redis
+djangorestframework-recursive

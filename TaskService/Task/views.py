@@ -9,6 +9,8 @@ from rest_framework.response import Response
 from django.conf import settings
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.views import APIView
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
 
 # Create your views here.
 
@@ -30,6 +32,7 @@ class CreateTaskView(viewsets.ModelViewSet):
     def perform_destroy(self, instance):
         instance.deleted_at = timezone.now()
         instance.deleted_by_id = self.request.user.id
+        instance.status_id = 5
         instance._just_deleted = True
         instance.save()
 
@@ -93,4 +96,17 @@ class InternalSetTaskWorkerView(APIView):
         task.worker_id = worker_id
         task.save()
 
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            "tasks_feed",
+            {
+                "type": "task_assigned",
+                "task_id": task.id,
+                "worker_id": worker_id,
+            }
+        )
+
         return Response({"task_id": task_id, "worker_id": worker_id})
+    
+
+

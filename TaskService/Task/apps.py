@@ -2,7 +2,7 @@ from django.apps import AppConfig
 
 
 class TaskConfig(AppConfig):
-    dafault_auto_field = 'django.db.models.BigAutoField'
+    default_auto_field = 'django.db.models.BigAutoField'
     name = 'Task'
 
     def ready(self):

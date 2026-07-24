@@ -9,12 +9,13 @@ https://docs.djangoproject.com/en/6.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
-
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+#auth
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "Earning.authentication.GatewayHeaderAuthentication",
@@ -26,11 +27,32 @@ REST_FRAMEWORK = {
         "drf_spectacular.openapi.AutoSchema",
 }
 
+#swagger
 SPECTACULAR_SETTINGS = {
     "TITLE": "Earning Service API",
     "DESCRIPTION": "Handles Worker Earnings CRUD",
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
+}
+
+#celery
+CELERY_BROKER_URL = os.environ.get('REDIS_URL', 'redis://127.0.0.1:6379/0')
+CELERY_RESULT_BACKEND = os.environ.get('REDIS_URL', 'redis://127.0.0.1:6379/0')
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'UTC'
+
+from celery.schedules import crontab
+
+CELERY_BEAT_SCHEDULE = {
+    'reset-daily-earnings': {
+        'task': 'Earning.tasks.reset_daily_earnings',
+        'schedule': crontab(hour=0, minute=0),
+    },
+    'reset-weekly-earnings': {
+        'task': 'Earning.tasks.reset_weekly_earnings',
+        'schedule': crontab(hour=0, minute=0, day_of_week=1),
+    },
 }
 
 # Quick-start development settings - unsuitable for production
@@ -57,6 +79,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'Earning',
     'drf_spectacular',
+    'django_celery_beat',
 ]
 
 MIDDLEWARE = [

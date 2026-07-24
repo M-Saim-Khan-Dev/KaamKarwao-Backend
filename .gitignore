@@ -34,3 +34,7 @@ staticfiles/
 *.log
 .DS_Store
 Thumbs.db
+
+EarningService/celerybeat-schedule.*
+db.sqlite3
+__pycache__/

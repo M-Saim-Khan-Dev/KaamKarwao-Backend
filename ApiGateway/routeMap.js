@@ -89,12 +89,28 @@ const routes = [
         roles: ['Customer', 'Admin', 'Worker']
     },
     {
+        publicPath: '/app/delete/user',
+        realPath: '/app/user/delete/',
+        service: 'user',
+        target: 'USER_SERVICE_URL',
+        auth: 'required',
+        roles: ['Customer', 'Admin', 'Worker']
+    },
+    {
         publicPath: '/app/update/user/image',
         realPath: '/app/user/update/image/',
         service: 'user',
         target: 'USER_SERVICE_URL',
         auth: 'required',
         roles: ['Customer', 'Admin']
+    },
+    {
+        publicPath: '/app/admin',
+        realPath: '/administrator/',
+        service: 'user',
+        target: 'USER_SERVICE_URL',
+        auth: 'required',
+        roles: ['Admin']
     },
     {
         publicPath: '/app/usertype',
@@ -108,6 +124,14 @@ const routes = [
         publicPath: '/app/category',
         realPath: '/category_service/',
         service: 'category',
+        target: 'CATEGORY_URL',
+        auth: 'required',
+        roles: ['Customer', 'Admin', 'Worker']
+    },
+    {
+        publicPath: '/app/sub/category',
+        realPath: '/subcategory_service/',
+        service: 'subcategory',
         target: 'CATEGORY_URL',
         auth: 'required',
         roles: ['Customer', 'Admin', 'Worker']
