@@ -1,6 +1,8 @@
 # KaamKarwao Backend
 
-KaamKarwao Backend is a microservice-based backend for a task marketplace. It includes user management, locations, categories, tasks, bidding, earnings, reviews, attachments, payment preferences, statuses, configuration, and an API Gateway that routes frontend requests to the correct service.
+KaamKarwao Backend is a microservice-based backend for an on-demand home and field services marketplace. The platform connects customers who need practical tasks completed with workers who can provide those services. A customer can create a task such as electrical repair, plumbing work, fixture installation, pipe repair, tap replacement, or other household maintenance needs. Available workers can discover open tasks, place bids, communicate availability through the bidding flow, and be assigned once a bid is accepted.
+
+The backend is designed around separated business domains so each major part of the platform can evolve independently. It includes user management, worker/customer roles, locations, categories, task creation, bidding, earnings, reviews, attachments, payment preferences, statuses, configuration, real-time updates, and an API Gateway that routes frontend requests to the correct service.
 
 ## Project Structure
 
