@@ -113,6 +113,14 @@ const routes = [
         roles: ['Admin']
     },
     {
+        publicPath: '/app/wallet',
+        realPath: '/wallet/',
+        service: 'wallet',
+        target: 'WALLET_SERVICE_URL',
+        auth: 'required',
+        roles: ['Customer', 'Admin', 'Worker']
+    },
+    {
         publicPath: '/app/usertype',
         realPath: '/usertype_service/',
         service: 'usertype',
@@ -142,7 +150,7 @@ const routes = [
         service: 'paymentpref',
         target: 'PAYMENT_PREFERENCE_URL',
         auth: 'required',
-        roles: ['Customer', 'Admin']
+        roles: ['Customer', 'Admin', 'Worker']
     },
     {
         publicPath: '/app/attachment',
@@ -150,7 +158,7 @@ const routes = [
         service: 'attachment',
         target: 'ATTACHMENT_URL',
         auth: 'required',
-        roles: ['Customer', 'Admin']
+        roles: ['Customer', 'Admin','Worker']
     },
     {
         publicPath: '/app/profile',
@@ -191,6 +199,14 @@ const routes = [
         target: 'BIDDING_SERVICE_URL',
         auth: 'required',
         roles:['Customer', 'Worker', 'Admin']
+    },
+    {
+    publicPath: '/app/message',
+    realPath: '/messages/',
+    service: 'message',
+    target: 'MESSAGE_SERVICE_URL',
+    auth: 'required',
+    roles: ['Customer', 'Worker', 'Admin']
     },
 ];
 module.exports = [...routes].sort((a, b) => b.publicPath.length - a.publicPath.length);

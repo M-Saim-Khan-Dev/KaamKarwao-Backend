@@ -14,5 +14,5 @@ class Task(models.Model):
     status_id = models.IntegerField()
     payment_preference_id = models.IntegerField()
     accurately_estimated = models.IntegerField()
-    category_id = models.IntegerField()
+    subcategory_id = models.IntegerField()
     worker_id = models.IntegerField(null=True, blank=True)

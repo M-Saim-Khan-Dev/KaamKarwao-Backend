@@ -9,6 +9,7 @@ django-phonenumber-field
 phonenumbers
 gunicorn
 dj-database-url
+agora-token-builder
 psycopg[binary]
 pika
 pillow

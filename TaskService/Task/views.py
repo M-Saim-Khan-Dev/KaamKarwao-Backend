@@ -94,6 +94,7 @@ class InternalSetTaskWorkerView(APIView):
             return Response({"error": "Task not found"}, status=404)
 
         task.worker_id = worker_id
+        task.status_id = 3
         task.save()
 
         channel_layer = get_channel_layer()
@@ -109,4 +110,25 @@ class InternalSetTaskWorkerView(APIView):
         return Response({"task_id": task_id, "worker_id": worker_id})
     
 
+@extend_schema(exclude=True)
+class InternalTaskChatStatusView(APIView):
+    permission_classes = [AllowAny]
 
+    def get(self, request, task_id):
+        task = get_object_or_404(Task, id=task_id)
+
+        ACCEPTED_STATUS_ID = 3
+
+        is_open = (
+            task.status_id == ACCEPTED_STATUS_ID
+            and task.worker_id is not None
+            and task.deleted_at is None
+        )
+
+        return Response({
+            "task_id": task.id,
+            "is_open": is_open,
+            "created_by": task.created_by,
+            "worker_id": task.worker_id,
+            "status_id": task.status_id,
+        })

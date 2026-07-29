@@ -64,6 +64,15 @@ const biddingWsProxy = createProxyMiddleware({
 
 app.use('/ws/bidding', verifyJWT, biddingWsProxy);
 
+const chatWsProxy = createProxyMiddleware({
+    target: SERVICE_URLS.MESSAGE_SERVICE_URL,
+    changeOrigin: true,
+    ws: true,
+    pathRewrite: (path, req) => req.originalUrl,
+});
+
+app.use('/ws/chat', verifyJWT, chatWsProxy);
+
 const docsRouter = require('./docs');
 app.use('/api-docs', docsRouter);
 
@@ -75,6 +84,8 @@ server.on('upgrade', (req, socket, head) => {
         taskWsProxy.upgrade(req, socket, head);
     } else if (req.url.startsWith('/ws/bidding')) {
         biddingWsProxy.upgrade(req, socket, head);
+    } else if (req.url.startsWith('/ws/chat')) {
+        chatWsProxy.upgrade(req, socket, head);
     } else {
         socket.destroy();
     }

@@ -16,6 +16,6 @@ class TaskSerializer(serializers.ModelSerializer):
             'status_id',
             'payment_preference_id',
             'accurately_estimated',
-            'category_id',
-            'worker_id', #worker id
+            'subcategory_id',
+            'worker_id',
         ]

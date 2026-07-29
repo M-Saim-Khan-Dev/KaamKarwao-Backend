@@ -1,7 +1,7 @@
 from django.urls import path
 from rest_framework.routers import DefaultRouter
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
-from .views import CreateTaskView,GetTaskByCreatedByView,GetOpenTasksView,GetTaskByWorkerView,InternalSetTaskWorkerView
+from .views import CreateTaskView,GetTaskByCreatedByView,GetOpenTasksView,GetTaskByWorkerView,InternalSetTaskWorkerView,InternalTaskChatStatusView
 router  = DefaultRouter()
 router.register('task_service', CreateTaskView)
 urlpatterns = [
@@ -11,4 +11,5 @@ urlpatterns = [
     path('task_service/open/', GetOpenTasksView.as_view(), name='open-tasks'),
     path('task_service/worker/<int:worker_id>/', GetTaskByWorkerView.as_view(), name='tasks-by-worker'),
     path('task_service/internal/<int:task_id>/set-worker/', InternalSetTaskWorkerView.as_view(), name='internal-set-worker'),
+    path('internal/task/<int:task_id>/chat-status/', InternalTaskChatStatusView.as_view(), name='internal-chat-status'),
 ] + router.urls

@@ -1,7 +1,7 @@
 import os
 import requests
 
-TASK_SERVICE_URL = os.environ.get("TASK_SERVICE_URL", "http://127.0.0.1:8007")
+TASK_SERVICE_URL = os.environ.get("TASK_SERVICE_URL", "http://127.0.0.1:8007/   ")
 INTERNAL_SERVICE_SECRET = os.environ.get("INTERNAL_SERVICE_SECRET")
 
 def set_task_worker(task_id, worker_id):

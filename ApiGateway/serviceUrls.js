@@ -11,4 +11,6 @@ module.exports = {
     EARNINGS_SERVICE_URL: process.env.EARNINGS_SERVICE_URL || 'http://0.0.0.0:8010/',
     REVIEW_SERVICE_URL: process.env.REVIEW_SERVICE_URL || 'http://0.0.0.0:8011/',
     BIDDING_SERVICE_URL: process.env.BIDDING_SERVICE_URL || 'http://127.0.0.1:8012/',
+    WALLET_SERVICE_URL: process.env.WALLET_SERVICE_URL || 'http://127.0.0.1:8013/',
+    MESSAGE_SERVICE_URL: process.env.MESSAGE_SERVICE_URL || 'http://127.0.0.1:8014/',
 };
