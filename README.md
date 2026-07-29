@@ -128,6 +128,7 @@ rabbitmq-server
 ### 2. Start HTTP Django services
 
 Run these commands from the repository root:
+(This will also start the websockets)
 
 ```bash
 python UserService/manage.py runserver 0.0.0.0:8001
@@ -143,26 +144,8 @@ python ReviewService/manage.py runserver 0.0.0.0:8011
 python WalletService/manage.py runserver 0.0.0.0:8013
 ```
 
-### 3. Start ASGI/WebSocket services
 
-TaskService, BiddingService, and MessageService use Django Channels. Run each command from its service directory:
-
-```bash
-cd TaskService
-daphne -b 0.0.0.0 -p 8007 TaskService.asgi:application
-```
-
-```bash
-cd BiddingService
-daphne -b 0.0.0.0 -p 8012 BiddingService.asgi:application
-```
-
-```bash
-cd MessageService
-daphne -b 0.0.0.0 -p 8014 MessageService.asgi:application
-```
-
-### 4. Start Celery worker and scheduler
+### 3. Start Celery worker and scheduler
 
 EarningService uses Redis-backed Celery jobs to reset earning totals. With Redis running, open two more terminals:
 
@@ -178,7 +161,7 @@ celery -A EarningService beat -l info
 
 The worker executes queued tasks. Beat schedules the daily reset at 00:00 UTC and the weekly reset at 00:00 UTC every Monday. Run both processes in development; only one Beat instance should run in a shared environment.
 
-### 5. Start the API Gateway
+### 4. Start the API Gateway
 
 ```bash
 cd ApiGateway
