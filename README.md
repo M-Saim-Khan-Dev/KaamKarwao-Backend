@@ -17,6 +17,8 @@ KaamKarwao Backend/
   AttachmentService/          File attachment upload and storage
   TaskService/                Task CRUD, task feed WebSocket, worker assignment
   BiddingService/             Bidding CRUD and bidding WebSocket flow
+  MessageService/             Task chat, message history, and Agora token endpoints
+  WalletService/              User wallet management
   EarningService/             Worker earning totals and scheduled resets
   ReviewService/              Reviews and rating aggregation
   StatusService/              Status lookup data
@@ -29,37 +31,22 @@ KaamKarwao Backend/
 - Python 3.12+
 - Node.js 18+
 - Redis, required for Django Channels and Celery
+- RabbitMQ, required only for UserService and LocationService event consumers
 - Git
 
 SQLite is used by default for local development. Each Django service stores its own `db.sqlite3`.
 
 ## Environment Variables
 
-Create a root `.env` file in the project directory:
+Create your local environment file from the committed template:
 
-```env
-JWT_SIGNING_KEY=replace-with-a-long-random-secret
-INTERNAL_SERVICE_SECRET=replace-with-an-internal-service-secret
-REDIS_URL=redis://127.0.0.1:6379/0
-
-USER_SERVICE_URL=http://127.0.0.1:8001/
-LOCATION_SERVICE_URL=http://127.0.0.1:8002/
-USERTYPE_SERVICE_URL=http://127.0.0.1:8003/
-CATEGORY_URL=http://127.0.0.1:8004/
-PAYMENT_PREFERENCE_URL=http://127.0.0.1:8005/
-ATTACHMENT_URL=http://127.0.0.1:8006/
-TASK_URL=http://127.0.0.1:8007/
-STATUS_SERVICE_URL=http://127.0.0.1:8008/
-CONFIG_SERVICE_URL=http://127.0.0.1:8009/
-EARNINGS_SERVICE_URL=http://127.0.0.1:8010/
-REVIEW_SERVICE_URL=http://127.0.0.1:8011/
-BIDDING_SERVICE_URL=http://127.0.0.1:8012/
-
-SUPABASE_URL=your-supabase-url
-SUPABASE_SERVICE_KEY=your-supabase-service-key
+```powershell
+Copy-Item .env.example .env
 ```
 
-Supabase values are needed for upload features. If you are not testing uploads, those values can be left unset.
+Set the placeholder values in `.env`, especially `JWT_SIGNING_KEY` and `INTERNAL_SERVICE_SECRET`. All services and the gateway must use the same values for those two variables. `SUPABASE_*` is required for upload features and `AGORA_*` is required for message call-token endpoints.
+
+The gateway, TaskService, BiddingService, and MessageService load the root `.env` file when started from the repository root. Set the same variables in your shell or provide service-local `.env` files when starting services with a different working directory.
 
 ## Install Dependencies
 
@@ -69,6 +56,7 @@ From the project root:
 python -m venv env
 env\Scripts\activate
 pip install -r requirements.txt
+pip install -r TaskService/requirements.txt
 ```
 
 Install API Gateway dependencies:
@@ -96,6 +84,8 @@ python ConfigurationService/manage.py migrate
 python EarningService/manage.py migrate
 python ReviewService/manage.py migrate
 python BiddingService/manage.py migrate
+python MessageService/manage.py migrate
+python WalletService/manage.py migrate
 ```
 
 Create admin users only for services where you need admin access:
@@ -119,9 +109,25 @@ python CategoryService/manage.py seed_data
 python PaymentPreferenceService/manage.py seed_data
 ```
 
-## Run Services Locally
+## Run the Backend Locally
 
-Open separate terminals from the project root.
+Open a separate terminal for every process, activate the virtual environment in each terminal, and start Redis before the ASGI services or Celery.
+
+### 1. Start Redis
+
+```powershell
+redis-server
+```
+
+If UserService or LocationService event consumers are enabled, start RabbitMQ too:
+
+```powershell
+rabbitmq-server
+```
+
+### 2. Start HTTP Django services
+
+Run these commands from the repository root:
 
 ```bash
 python UserService/manage.py runserver 0.0.0.0:8001
@@ -134,16 +140,45 @@ python StatusService/manage.py runserver 0.0.0.0:8008
 python ConfigurationService/manage.py runserver 0.0.0.0:8009
 python EarningService/manage.py runserver 0.0.0.0:8010
 python ReviewService/manage.py runserver 0.0.0.0:8011
+python WalletService/manage.py runserver 0.0.0.0:8013
 ```
 
-TaskService and BiddingService use Django Channels. Run them with ASGI:
+### 3. Start ASGI/WebSocket services
+
+TaskService, BiddingService, and MessageService use Django Channels. Run each command from its service directory:
 
 ```bash
+cd TaskService
 daphne -b 0.0.0.0 -p 8007 TaskService.asgi:application
+```
+
+```bash
+cd BiddingService
 daphne -b 0.0.0.0 -p 8012 BiddingService.asgi:application
 ```
 
-Run the API Gateway:
+```bash
+cd MessageService
+daphne -b 0.0.0.0 -p 8014 MessageService.asgi:application
+```
+
+### 4. Start Celery worker and scheduler
+
+EarningService uses Redis-backed Celery jobs to reset earning totals. With Redis running, open two more terminals:
+
+```bash
+cd EarningService
+celery -A EarningService worker -l info
+```
+
+```bash
+cd EarningService
+celery -A EarningService beat -l info
+```
+
+The worker executes queued tasks. Beat schedules the daily reset at 00:00 UTC and the weekly reset at 00:00 UTC every Monday. Run both processes in development; only one Beat instance should run in a shared environment.
+
+### 5. Start the API Gateway
 
 ```bash
 cd ApiGateway
@@ -173,6 +208,8 @@ http://localhost:3000
 | EarningService | 8010 |
 | ReviewService | 8011 |
 | BiddingService | 8012 |
+| WalletService | 8013 |
+| MessageService | 8014 |
 
 ## API Gateway
 
@@ -217,30 +254,13 @@ Bidding room for a task:
 ws://localhost:8012/ws/bidding/<task_id>/
 ```
 
+Task chat room:
+
+```text
+ws://localhost:8014/ws/chat/<task_id>/?token=<access_token>
+```
+
 If routed through the gateway, use the gateway WebSocket paths configured in `ApiGateway/index.js`.
-
-## Celery
-
-EarningService uses Celery for scheduled earning resets.
-
-Start Redis first, then run:
-
-```bash
-cd EarningService
-celery -A EarningService worker -l info
-```
-
-In another terminal:
-
-```bash
-cd EarningService
-celery -A EarningService beat -l info
-```
-
-Scheduled tasks:
-
-- `reset_daily_earnings`
-- `reset_weekly_earnings`
 
 ## API Documentation
 
@@ -259,7 +279,7 @@ http://localhost:3000/api-docs
 
 ## Development Notes
 
-- Do not commit `env/`, `node_modules/`, `__pycache__/`, `.env`, or `db.sqlite3`.
+- Do not commit `env/`, `node_modules/`, `__pycache__/`, `.env`, generated local SQLite databases, or Celery scheduler state. See `.gitignore` for the complete list.
 - Run migrations after changing models.
 - Keep `JWT_SIGNING_KEY` the same across services and the API Gateway.
 - Keep `INTERNAL_SERVICE_SECRET` the same for internal service-to-service calls.
@@ -289,6 +309,7 @@ python UserService/manage.py runserver 8001
 Run an ASGI service:
 
 ```bash
+cd TaskService
 daphne -p 8007 TaskService.asgi:application
 ```
 
