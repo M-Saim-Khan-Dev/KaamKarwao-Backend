@@ -1,40 +1,48 @@
+# Python virtual environments, bytecode, and caches
 env/
 venv/
 .venv/
 ENV/
-**/env/
-**/venv/
-**/.venv/
-
 __pycache__/
-**/__pycache__/
 *.py[cod]
 *$py.class
 
-db.sqlite3
+# Test caches and coverage reports
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# Local SQLite databases
 *.sqlite3
 *.sqlite
 
+# Local environment files and secrets (commit .env.example instead)
 .env
 *.env
 .env.*
 !.env.example
 
+# Node dependencies and logs
 node_modules/
-**/node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# Generated uploads and collected static files
 media/
-**/media/
 staticfiles/
-**/staticfiles/
 
+# Application and operating-system logs/files
 *.log
 .DS_Store
 Thumbs.db
 
+# Local editor settings
+.idea/
+.vscode/
+
+# Celery scheduler state
 EarningService/celerybeat-schedule.*
-db.sqlite3
-__pycache__/
