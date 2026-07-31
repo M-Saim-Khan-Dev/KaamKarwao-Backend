@@ -87,6 +87,7 @@ RABBITMQ_URL = os.environ.get('RABBITMQ_URL', 'amqp://guest:guest@localhost/')
 AUTH_USER_MODEL = 'users.User'
 
 MIDDLEWARE = [
+    'request_logging.RequestLoggingMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -96,6 +97,13 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+LOGGING = {
+    'version': 1, 'disable_existing_loggers': False,
+    'formatters': {'verbose': {'format': '%(asctime)s %(levelname)s %(name)s %(message)s'}},
+    'handlers': {'console': {'class': 'logging.StreamHandler', 'formatter': 'verbose'}},
+    'loggers': {'http.request': {'handlers': ['console'], 'level': 'INFO', 'propagate': False}},
+}
 
 ROOT_URLCONF = 'config.urls'
 

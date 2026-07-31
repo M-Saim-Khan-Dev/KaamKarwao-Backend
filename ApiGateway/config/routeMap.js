@@ -18,6 +18,13 @@ const routes = [
         auth: 'none'
     },
     {
+        publicPath: `${API_PREFIX}/user/add-verify`,
+        realPath: '/app/user/verification-attachments/',
+        service: 'user',
+        target: 'USER_SERVICE_URL',
+        auth: 'optional',
+    },
+    {
         publicPath: `${API_PREFIX}/token`,
         realPath: '/app/user/token/',
         service: 'user',

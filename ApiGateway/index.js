@@ -5,6 +5,10 @@ const { verifyJWT, withUserHeaders, optionalJWT, requireRole } = require('./midd
 const routeMap = require('./config/routeMap');
 const SERVICE_URLS = require('./config/serviceUrls');
 
+function log(level, event, fields = {}) {
+    console[level](JSON.stringify({ timestamp: new Date().toISOString(), event, ...fields }));
+}
+
 function maskedProxy(target, PublicPath, RealPath) {
     return createProxyMiddleware({
         target,
@@ -15,6 +19,12 @@ function maskedProxy(target, PublicPath, RealPath) {
             return rewritten;
         },
         on: {
+            error: (error, req) => log('error', 'proxy_error', {
+                method: req.method,
+                path: req.originalUrl,
+                target,
+                error: error.message,
+            }),
             proxyReq: (proxyReq, req) => {
                 if (req.userId) {
                     proxyReq.setHeader('X-User-Id', req.userId); 
@@ -30,10 +40,27 @@ function maskedProxy(target, PublicPath, RealPath) {
 const app = express();
 const cors = require('cors');
 app.use(cors());
+app.use((req, res, next) => {
+    const startedAt = process.hrtime.bigint();
+    res.on('finish', () => {
+        const durationMs = Number(process.hrtime.bigint() - startedAt) / 1e6;
+        const level = res.statusCode >= 500 ? 'error' : res.statusCode >= 400 ? 'warn' : 'info';
+        log(level, 'http_request_completed', {
+            method: req.method,
+            path: req.originalUrl,
+            status: res.statusCode,
+            duration_ms: Number(durationMs.toFixed(2)),
+        });
+    });
+    next();
+});
 
 for (const route of routeMap) {
     const target = SERVICE_URLS[route.target];
     const middlewares = []
+    if (!target) {
+        log('error', 'route_target_missing', { path: route.publicPath, target_key: route.target });
+    }
 
     if (route.auth === 'optional') {
         middlewares.push(optionalJWT);
@@ -87,8 +114,9 @@ server.on('upgrade', (req, socket, head) => {
     } else if (req.url.startsWith('/ws/chat')) {
         chatWsProxy.upgrade(req, socket, head);
     } else {
+        log('warn', 'websocket_upgrade_rejected', { path: req.url });
         socket.destroy();
     }
 });
 
-server.listen(PORT, () => console.log(`API Gateway running on port ${PORT}`));
+server.listen(PORT, () => log('info', 'gateway_started', { port: PORT }));

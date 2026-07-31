@@ -64,6 +64,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'request_logging.RequestLoggingMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -73,6 +74,13 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
 ]
+
+LOGGING = {
+    'version': 1, 'disable_existing_loggers': False,
+    'formatters': {'verbose': {'format': '%(asctime)s %(levelname)s %(name)s %(message)s'}},
+    'handlers': {'console': {'class': 'logging.StreamHandler', 'formatter': 'verbose'}},
+    'loggers': {'http.request': {'handlers': ['console'], 'level': 'INFO', 'propagate': False}, 'apps': {'handlers': ['console'], 'level': 'INFO', 'propagate': False}},
+}
 
 ROOT_URLCONF = 'config.urls'
 

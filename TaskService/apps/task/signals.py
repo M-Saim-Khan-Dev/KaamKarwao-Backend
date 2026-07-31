@@ -1,4 +1,5 @@
 import requests
+import logging
 from django.db.models.signals import post_save,pre_save
 from django.dispatch import receiver
 from asgiref.sync import async_to_sync
@@ -7,6 +8,7 @@ from .models import Task
 from .serializers import TaskSerializer
 
 EARNING_SERVICE_URL = "http://127.0.0.1:8010"
+logger = logging.getLogger(__name__)
 
 @receiver(pre_save,sender = Task)
 def stash_old_status(sender, instance, **kwargs):
@@ -17,12 +19,14 @@ def stash_old_status(sender, instance, **kwargs):
             instance._old_status_id = None
     else:
         instance._old_status_id = None
+    logger.debug("Captured task status before save task_id=%s old_status_id=%s", instance.pk, instance._old_status_id)
 
 @receiver(post_save, sender= Task)
 def broadcast_task_events(sender, instance, created, **kwargs):
     channel_layer = get_channel_layer()
 
     if created:
+        logger.info("Task created; broadcasting task_id=%s", instance.id)
         async_to_sync(channel_layer.group_send)(
             "tasks_feed",
             {
@@ -33,6 +37,7 @@ def broadcast_task_events(sender, instance, created, **kwargs):
         return
     
     if getattr(instance, '_just_deleted', False):
+        logger.info("Task deleted; broadcasting task_id=%s deleted_by=%s", instance.id, instance.deleted_by_id)
         async_to_sync(channel_layer.group_send)(
             "tasks_feed",
             {
@@ -46,6 +51,7 @@ def broadcast_task_events(sender, instance, created, **kwargs):
     
     old_status = getattr(instance,'_old_status_id', None)
     if instance.status_id == 4 and old_status != 4:
+        logger.info("Task marked complete; evaluating earning sync task_id=%s worker_id=%s", instance.id, instance.worker_id)
         if not instance.worker_id:
             print(f"Task {instance.id} marked complete but has no worker_id — skipping earning sync")
             return
@@ -57,4 +63,5 @@ def broadcast_task_events(sender, instance, created, **kwargs):
                 timeout=3,
             )
         except requests.RequestException as e:
+            logger.exception("Earning sync failed task_id=%s worker_id=%s", instance.id, instance.worker_id)
             print(f"Failed to sync earning for task {instance.id}: {e}")

@@ -83,3 +83,24 @@ class UnverifiedUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ["id", "verify_attachment_id_front", "verify_attachment_id_back"]
+
+
+class SubmitVerificationAttachmentsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["verify_attachment_id_front", "verify_attachment_id_back"]
+
+    def validate(self, data):
+        instance = self.instance
+
+        if instance.is_verified:
+            raise serializers.ValidationError(
+                "This account is already verified — attachments cannot be resubmitted."
+            )
+
+        if instance.verify_attachment_id_front is not None or instance.verify_attachment_id_back is not None:
+            raise serializers.ValidationError(
+                "Verification attachments have already been submitted and cannot be changed."
+            )
+
+        return data

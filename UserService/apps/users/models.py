@@ -53,4 +53,5 @@ class User(AbstractUser):
     def save(self, *args, **kwargs):
         if self.usertype_id == self.ADMIN_USERTYPE_ID:
             self.is_staff = True
+            self.is_verified = True
         super().save(*args, **kwargs)

@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth import authenticate
 from rest_framework import generics, status
-from .serializers import UserSerializer,UpdateImageSerializer,UpdateUserIsVerifiedSerializer,UserInfoSerializer,UnverifiedUserSerializer
+from .serializers import UserSerializer,UpdateImageSerializer,UpdateUserIsVerifiedSerializer,UserInfoSerializer,UnverifiedUserSerializer,SubmitVerificationAttachmentsSerializer
 from django.utils import timezone
 from rest_framework.permissions import IsAuthenticated,AllowAny,IsAdminUser
 from rest_framework.response import Response
@@ -153,6 +153,17 @@ class GetUserInfoView(generics.RetrieveAPIView):
     lookup_field = 'pk'
 
 @extend_schema(
+    summary="Submit verification attachments (CNIC front/back)",
+    description="Allows a user to submit their front and back CNIC attachment IDs. Only allowed once — fails if either is already set.",
+)
+class SubmitVerificationAttachmentsView(generics.UpdateAPIView):
+    serializer_class = SubmitVerificationAttachmentsSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        return get_object_or_404(User, id=self.request.user.id)
+
+@extend_schema(
     summary="List all users (Admin only)",
     description="Returns a paginated list of all non-deleted users. Admin access required.",
 )
@@ -238,3 +249,18 @@ class InternalUpdateRatingView(APIView):
         user.overall_rating = overall_rating
         user.save()
         return Response({"id": user.id, "overall_rating": user.overall_rating}, status=status.HTTP_200_OK)
+
+@extend_schema(exclude=True)
+class InternalUserStatusView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request, user_id):
+        user = get_object_or_404(User, id=user_id)
+        return Response({
+            "id": user.id,
+            "is_verified": user.is_verified,
+            "is_staff": user.is_staff,
+            "usertype_id": user.usertype_id,
+            "is_active": user.is_active,
+            "deleted_at": user.deleted_at,
+        })

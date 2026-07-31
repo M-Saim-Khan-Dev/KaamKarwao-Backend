@@ -1,5 +1,6 @@
 import json
 import asyncio
+import logging
 from decimal import Decimal, InvalidOperation
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
@@ -8,17 +9,20 @@ from .serializers import BidSerializer
 from .internal_client import set_task_worker
 
 HEARTBEAT_INTERVAL_SECONDS = 10
+logger = logging.getLogger(__name__)
 
 class BiddingConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.task_id = self.scope["url_route"]["kwargs"]['task_id']
         self.group_name= f"bidding_{self.task_id}"
+        logger.info("Bidding websocket connection requested task_id=%s", self.task_id)
 
         already_closed = await self.is_bidding_closed()
         await self.channel_layer.group_add(self.group_name,self.channel_name)
         await self.accept()
 
         if already_closed:
+            logger.warning("Rejected websocket for closed bidding task_id=%s", self.task_id)
             await self.send(text_data=json.dumps({
                 "type": "bidding_closed",
                 "message": "Bidding for this task has already ended.",
@@ -33,11 +37,13 @@ class BiddingConsumer(AsyncWebsocketConsumer):
         }))
 
         self.heartbeat_task = asyncio.ensure_future(self.heartbeat_loop())
+        logger.info("Bidding websocket connected task_id=%s", self.task_id)
     
     async def disconnect(self, close_code):
         await self.channel_layer.group_discard(self.group_name, self.channel_name)
         if hasattr(self,'heartbeat_task'):
             self.heartbeat_task.cancel()
+        logger.info("Bidding websocket disconnected task_id=%s close_code=%s", self.task_id, close_code)
     
     async def heartbeat_loop(self):
         try:
@@ -54,6 +60,7 @@ class BiddingConsumer(AsyncWebsocketConsumer):
         try:
             data = json.loads(text_data)
         except json.JSONDecodeError:
+            logger.warning("Invalid websocket JSON task_id=%s", self.task_id)
             await self.send(text_data=json.dumps({"error": "Invalid JSON"}))
             return
         
@@ -64,6 +71,7 @@ class BiddingConsumer(AsyncWebsocketConsumer):
         elif action == "accept_bid":
             await self.handle_accept_bid(data)
         else:
+            logger.warning("Unknown bidding action task_id=%s action=%s", self.task_id, action)
             await self.send(text_data=json.dumps({"error": f"Unknown action : {action}"}))
 
     async def handle_place_bid(self,data):
@@ -72,16 +80,19 @@ class BiddingConsumer(AsyncWebsocketConsumer):
         estimated_hours = data.get("estimated_hours")
 
         if not user_id or price is None:
+            logger.warning("Rejected bid missing fields task_id=%s", self.task_id)
             await self.send(text_data=json.dumps({"error": "user_id and price are required"}))
             return
         
         try:
             price = Decimal(str(price))
         except InvalidOperation:
+            logger.warning("Rejected bid with invalid price task_id=%s user_id=%s", self.task_id, user_id)
             await self.send(text_data=json.dumps({"error": "Price must be a valid number"}))
             return
         
         bid = await self.create_bid(user_id,price,estimated_hours)
+        logger.info("Bid created task_id=%s bid_id=%s user_id=%s", self.task_id, bid.id, user_id)
 
         await self.channel_layer.group_send(
             self.group_name,
@@ -91,19 +102,24 @@ class BiddingConsumer(AsyncWebsocketConsumer):
     async def handle_accept_bid(self,data):
         bid_id = data.get("bid_id")
         if not bid_id:
+            logger.warning("Bid acceptance missing bid_id task_id=%s", self.task_id)
             await self.send(text_data=json.dumps({"error": "bid_id is required"}))
             return
         
         bid = await self.accept_bid(bid_id)
         if bid is None:
+            logger.warning("Bid acceptance failed; bid not found task_id=%s bid_id=%s", self.task_id, bid_id)
             await self.send(text_data=json.dumps({"error": "Bid is not found for this task"}))
             return
         
         success = await database_sync_to_async(set_task_worker)(self.task_id, bid.user_id)
         if not success:
+            logger.error("Bid accepted but TaskService update failed task_id=%s bid_id=%s", self.task_id, bid.id)
             await self.send(text_data=json.dumps({
                 "error": "Bid accepted, but failed to update task worker. Please retry or contact support."
             }))
+        else:
+            logger.info("Bid accepted task_id=%s bid_id=%s worker_id=%s", self.task_id, bid.id, bid.user_id)
 
         await self.channel_layer.group_send(
             self.group_name,
