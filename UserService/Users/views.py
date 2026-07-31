@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from .models import User
 from rest_framework_simplejwt.tokens import RefreshToken
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import extend_schema,OpenApiParameter
 from .supabase_client import upload_to_supabase
 from rest_framework.parsers import MultiPartParser, FormParser
 from .pagination import StandardResultsPagination
@@ -186,6 +186,31 @@ class AdminDeleteUserView(generics.DestroyAPIView):
         instance.is_active = False
         instance.deleted_by = self.request.user
         instance.save()
+
+
+@extend_schema(
+    summary="Check if a phone number is already registered",
+    description="Returns whether a given phone number already belongs to a non-deleted user",
+    parameters=[
+        OpenApiParameter(name="phone_number", type=str, required=True, description="Phone number to check, e.g. +923001234567"),
+    ],
+)
+class CheckPhoneNumberView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        phone_number = request.query_params.get("phone_number")
+        if not phone_number:
+            return Response({"error": "phone_number query param is required"}, status=400)
+
+        exists = User.objects.filter(
+            phone_number=phone_number,
+            deleted_at__isnull=True,
+        ).exists()
+
+        return Response({"phone_number": phone_number, "is_registered": exists})
+
+
 
 @extend_schema(exclude=True)
 class InternalUpdateRatingView(APIView):

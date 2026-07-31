@@ -1,7 +1,7 @@
 const express = require('express');
 const swaggerUi = require('swagger-ui-express');
-const routeMap = require('./routeMap');
-const SERVICE_URLS = require('./serviceUrls');
+const routeMap = require('./config/routeMap');
+const SERVICE_URLS = require('./config/serviceUrls');
 
 const router = express.Router();
 

@@ -18,7 +18,7 @@ from django.contrib import admin
 from django.urls import path
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-from Users.views import CreateUserView,UpdateUserView,UpdateUserImageView,UserLoginView,UpdateUserVerifiedView,GetUserInfoView,DeleteUserView,InternalUpdateRatingView,AdminListUsersView,AdminUpdateUserView,AdminDeleteUserView
+from Users.views import CreateUserView,UpdateUserView,UpdateUserImageView,UserLoginView,UpdateUserVerifiedView,GetUserInfoView,DeleteUserView,InternalUpdateRatingView,AdminListUsersView,AdminUpdateUserView,AdminDeleteUserView,CheckPhoneNumberView
 urlpatterns = [
     path('app/admin/', admin.site.urls),
     path("app/register/user/",CreateUserView.as_view(),name = 'register'),
@@ -36,4 +36,5 @@ urlpatterns = [
     path('administrator/get/users/', AdminListUsersView.as_view(), name='admin-list-users'),
     path('administrator/get/users/<int:pk>/', AdminUpdateUserView.as_view(), name='admin-update-user'),
     path('administrator/get/users/<int:pk>/delete/', AdminDeleteUserView.as_view(), name='admin-delete-user'),
+    path('app/user/check-phone/', CheckPhoneNumberView.as_view(), name='check-phone'),
 ]

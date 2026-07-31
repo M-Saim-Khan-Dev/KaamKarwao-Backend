@@ -1,21 +1,5 @@
-asgiref
-Django
-django-cors-headers
-djangorestframework
-djangorestframework-simplejwt
-PyJWT
-pytz
-django-phonenumber-field
-phonenumbers
-gunicorn
-dj-database-url
-agora-token-builder
-psycopg[binary]
-pika
-pillow
-supabase
-python-dotenv
-drf-spectacular
-requests
-celery django-celery-beat redis
-djangorestframework-recursive
+# Base dependencies used by every Django service.
+Django==6.0.7
+djangorestframework==3.17.1
+gunicorn==26.0.0
+drf-spectacular==0.30.0

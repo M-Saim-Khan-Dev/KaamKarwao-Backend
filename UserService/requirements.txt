@@ -1,0 +1,10 @@
+# UserService-only dependencies.
+-r ../requirements.txt
+python-dotenv==1.2.2
+django-cors-headers==4.9.0
+djangorestframework-simplejwt==5.5.1
+django-phonenumber-field==8.4.0
+phonenumbers==9.0.34
+pika==1.4.1
+Pillow==12.3.0
+supabase==2.31.0

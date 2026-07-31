@@ -2,8 +2,8 @@ const express = require('express')
 const http = require('http')
 const { createProxyMiddleware } = require('http-proxy-middleware');
 const { verifyJWT, withUserHeaders, optionalJWT, requireRole } = require('./middleware/auth');
-const routeMap = require('./routeMap');
-const SERVICE_URLS = require('./serviceUrls');
+const routeMap = require('./config/routeMap');
+const SERVICE_URLS = require('./config/serviceUrls');
 
 function maskedProxy(target, PublicPath, RealPath) {
     return createProxyMiddleware({
@@ -17,7 +17,7 @@ function maskedProxy(target, PublicPath, RealPath) {
         on: {
             proxyReq: (proxyReq, req) => {
                 if (req.userId) {
-                    proxyReq.setHeader('X-User-Id', req.userId);
+                    proxyReq.setHeader('X-User-Id', req.userId); 
                     proxyReq.setHeader('X-Is-Verified', req.isVerified ? 'true' : 'false');
                     proxyReq.setHeader('X-Is-Staff', req.isStaff ? 'true' : 'false');
                     proxyReq.setHeader('X-Usertype-Id', req.usertypeId != null ? String(req.usertypeId) : '');

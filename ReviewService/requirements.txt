@@ -1,0 +1,3 @@
+# ReviewService-only dependency.
+-r ../requirements.txt
+requests==2.34.2

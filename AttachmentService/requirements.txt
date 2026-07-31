@@ -1,0 +1,5 @@
+# AttachmentService-only dependencies.
+-r ../requirements.txt
+python-dotenv==1.2.2
+Pillow==12.3.0
+supabase==2.31.0

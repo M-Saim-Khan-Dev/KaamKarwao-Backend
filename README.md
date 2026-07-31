@@ -56,7 +56,17 @@ From the project root:
 python -m venv env
 env\Scripts\activate
 pip install -r requirements.txt
-pip install -r TaskService/requirements.txt
+```
+
+The root `requirements.txt` contains the shared Django stack. Each Python
+service file includes the root file and then lists only its additional,
+service-specific packages. You can install a service file directly. For
+example:
+
+```bash
+pip install -r TaskService/requirements.txt       # WebSockets
+pip install -r EarningService/requirements.txt    # Celery jobs
+pip install -r AttachmentService/requirements.txt # uploads/Supabase
 ```
 
 Install API Gateway dependencies:
@@ -72,19 +82,33 @@ cd ..
 Run migrations for each Django service:
 
 ```bash
+python UserService/manage.py makemigrations
 python UserService/manage.py migrate
+python UserTypeService/manage.py makemigrations
 python UserTypeService/manage.py migrate
+python LocationService/manage.py makemigrations
 python LocationService/manage.py migrate
+python CategoryService/manage.py makemigrations
 python CategoryService/manage.py migrate
+python PaymentPreferenceService/manage.py makemigrations
 python PaymentPreferenceService/manage.py migrate
+python AttachmentService/manage.py makemigrations
 python AttachmentService/manage.py migrate
+python TaskService/manage.py makemigrations
 python TaskService/manage.py migrate
+python StatusService/manage.py makemigrations
 python StatusService/manage.py migrate
+python ConfigurationService/manage.py makemigrations
 python ConfigurationService/manage.py migrate
+python EarningService/manage.py makemigrations
 python EarningService/manage.py migrate
+python ReviewService/manage.py makemigrations
 python ReviewService/manage.py migrate
+python BiddingService/manage.py makemigrations
 python BiddingService/manage.py migrate
+python MessageService/manage.py makemigrations
 python MessageService/manage.py migrate
+python WalletService/manage.py makemigrations
 python WalletService/manage.py migrate
 ```
 
@@ -128,7 +152,14 @@ rabbitmq-server
 ### 2. Start HTTP Django services
 
 Run these commands from the repository root:
-(This will also start the websockets)
+
+Note: I have added daphne to the start of installed apps making it so that the websockets start when the servers are normally started, however incase that is moved, or the websockets are to be installed separately:
+
+```bash
+cd TaskService
+daphne -p 8007 TaskService.asgi:application
+```
+
 
 ```bash
 python UserService/manage.py runserver 0.0.0.0:8001
@@ -159,7 +190,7 @@ cd EarningService
 celery -A EarningService beat -l info
 ```
 
-The worker executes queued tasks. Beat schedules the daily reset at 00:00 UTC and the weekly reset at 00:00 UTC every Monday. Run both processes in development; only one Beat instance should run in a shared environment.
+The worker executes queued tasks. Beat schedules the daily reset at 00:00 PKT and the weekly reset at 00:00 PKT every Monday. Run both processes in development; only one Beat instance should run in a shared environment.
 
 ### 4. Start the API Gateway
 
@@ -276,24 +307,10 @@ Check pending migrations:
 python UserService/manage.py makemigrations --check
 ```
 
-Create migrations for a service:
-
-```bash
-python TaskService/manage.py makemigrations
-python TaskService/manage.py migrate
-```
-
 Run a Django service directly:
 
 ```bash
 python UserService/manage.py runserver 8001
-```
-
-Run an ASGI service:
-
-```bash
-cd TaskService
-daphne -p 8007 TaskService.asgi:application
 ```
 
 Run the gateway:

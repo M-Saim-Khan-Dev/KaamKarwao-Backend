@@ -1,5 +1,4 @@
 require('dotenv').config({ path: require('path').resolve(__dirname, '..', '..', '.env') });
-console.log("JWT_SIGNING_KEY loaded:", process.env.JWT_SIGNING_KEY ? "yes" : "NO - undefined!");
 const express = require('express')
 const jwt = require('jsonwebtoken')
 

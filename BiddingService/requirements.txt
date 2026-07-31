@@ -1,4 +1,4 @@
-# TaskService-only dependencies (WebSockets via Django Channels).
+# BiddingService-only dependencies (WebSockets via Django Channels).
 -r ../requirements.txt
 python-dotenv==1.2.2
 requests==2.34.2
