@@ -43,9 +43,11 @@ class User(AbstractUser):
     deleted_by= models.ForeignKey('self', null= True, blank = True, related_name="deletions", on_delete=models.SET_NULL)
     gender = models.CharField(max_length=16, default="Not Specified")
     overall_rating = models.FloatField(validators=[MinValueValidator(0), MaxValueValidator(5)], null=True, blank=True)
-    is_verified = models.BooleanField(default=True)
+    is_verified = models.BooleanField(default=False)
     usertype_id = models.IntegerField(null=True, blank=True)
     image = models.URLField(blank=True, null=True)
+    verify_attachment_id_front= models.IntegerField(null=True, blank=True)
+    verify_attachment_id_back = models.IntegerField(null=True, blank=True)
 
     ADMIN_USERTYPE_ID = 1
     def save(self, *args, **kwargs):

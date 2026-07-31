@@ -78,3 +78,8 @@ class UserInfoSerializer(serializers.ModelSerializer):
             "usertype_id",
             "image",
         ]
+
+class UnverifiedUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["id", "verify_attachment_id_front", "verify_attachment_id_back"]

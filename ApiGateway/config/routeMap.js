@@ -36,7 +36,8 @@ const routes = [
         realPath: '/app/user/verify/',
         service: 'user',
         target: 'USER_SERVICE_URL',
-        auth: 'none'
+        auth: 'required',
+        roles: ['Admin']
     },
 
     {
@@ -168,8 +169,7 @@ const routes = [
         realPath: '/attachment_service/',
         service: 'attachment',
         target: 'ATTACHMENT_URL',
-        auth: 'required',
-        roles: ['Customer', 'Admin','Worker']
+        auth: 'optional',
     },
     {
         publicPath: `${API_PREFIX}/profile`,

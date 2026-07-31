@@ -17,8 +17,8 @@ import os
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent.parent
-load_dotenv(Path(__file__).resolve().parent / ".env")
+BASE_DIR = Path(__file__).resolve().parent.parent.parent.parent
+load_dotenv(Path(__file__).resolve().parent.parent.parent / ".env")
 load_dotenv(BASE_DIR / ".env")
 
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
@@ -121,10 +121,12 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
 
+SERVICE_DIR = Path(__file__).resolve().parent.parent.parent
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': SERVICE_DIR / 'db.sqlite3',
     }
 }
 

@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth import authenticate
 from rest_framework import generics, status
-from .serializers import UserSerializer,UpdateImageSerializer,UpdateUserIsVerifiedSerializer,UserInfoSerializer
+from .serializers import UserSerializer,UpdateImageSerializer,UpdateUserIsVerifiedSerializer,UserInfoSerializer,UnverifiedUserSerializer
 from django.utils import timezone
 from rest_framework.permissions import IsAuthenticated,AllowAny,IsAdminUser
 from rest_framework.response import Response
@@ -187,6 +187,19 @@ class AdminDeleteUserView(generics.DestroyAPIView):
         instance.deleted_by = self.request.user
         instance.save()
 
+@extend_schema(
+    summary="List unverified users (Admin only)",
+    description="Returns id, verify_attachment_id_front, and verify_attachment_id_back for all users with is_verified=False who have submitted both attachments.",
+)
+class AdminListUnverifiedUsersView(generics.ListAPIView):
+    queryset = User.objects.filter(
+        is_verified=False,
+        verify_attachment_id_front__isnull=False,
+        verify_attachment_id_back__isnull=False,
+    ).order_by('created_at')
+    serializer_class = UnverifiedUserSerializer
+    permission_classes = [IsAdminUser]
+    pagination_class = StandardResultsPagination
 
 @extend_schema(
     summary="Check if a phone number is already registered",
