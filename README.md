@@ -52,11 +52,13 @@ The gateway, TaskService, BiddingService, and MessageService load the root `.env
 
 From the project root:
 
-```bash
+```powershell
 python -m venv env
 env\Scripts\activate
 pip install -r requirements.txt
 ```
+
+On macOS or Linux, activate it with `source env/bin/activate`. Activate the virtual environment in every terminal before starting a service, Celery, or the gateway.
 
 The root `requirements.txt` contains the shared Django stack. Each Python
 service file includes the root file and then lists only its additional,
@@ -153,14 +155,6 @@ rabbitmq-server
 
 Run these commands from the repository root:
 
-Note: I have added daphne to the start of installed apps making it so that the websockets start when the servers are normally started, however incase that is moved, or the websockets are to be installed separately:
-
-```bash
-cd TaskService
-daphne -p 8007 TaskService.asgi:application
-```
-
-
 ```bash
 python UserService/manage.py runserver 0.0.0.0:8001
 python LocationService/manage.py runserver 0.0.0.0:8002
@@ -168,13 +162,17 @@ python UserTypeService/manage.py runserver 0.0.0.0:8003
 python CategoryService/manage.py runserver 0.0.0.0:8004
 python PaymentPreferenceService/manage.py runserver 0.0.0.0:8005
 python AttachmentService/manage.py runserver 0.0.0.0:8006
+python TaskService/manage.py runserver 0.0.0.0:8007
 python StatusService/manage.py runserver 0.0.0.0:8008
 python ConfigurationService/manage.py runserver 0.0.0.0:8009
 python EarningService/manage.py runserver 0.0.0.0:8010
 python ReviewService/manage.py runserver 0.0.0.0:8011
+python BiddingService/manage.py runserver 0.0.0.0:8012
 python WalletService/manage.py runserver 0.0.0.0:8013
+python MessageService/manage.py runserver 0.0.0.0:8014
 ```
 
+TaskService, BiddingService, and MessageService include Daphne, so their development servers support WebSocket connections. To run one with Daphne explicitly, change to its service directory and run `daphne -p <port> <project>.asgi:application`.
 
 ### 3. Start Celery worker and scheduler
 
@@ -254,6 +252,25 @@ X-Is-Staff
 X-Usertype-Id
 ```
 
+For protected and optionally authenticated routes, the gateway checks the current account state with UserService before forwarding the request. Deleted, inactive, unverified, or role-less accounts are rejected even if their token is still valid. User status checks are cached briefly to reduce service-to-service requests.
+
+## User Verification
+
+Users can submit their CNIC attachment IDs once through the gateway:
+
+```http
+PATCH http://localhost:3000/app/user/add-verify
+Authorization: Bearer <access_token>
+Content-Type: application/json
+
+{
+  "verify_attachment_id_front": 123,
+  "verify_attachment_id_back": 456
+}
+```
+
+The account cannot replace these attachments after submission. Admin accounts are automatically marked verified.
+
 ## WebSockets
 
 Task feed:
@@ -298,6 +315,7 @@ http://localhost:3000/api-docs
 - Keep `JWT_SIGNING_KEY` the same across services and the API Gateway.
 - Keep `INTERNAL_SERVICE_SECRET` the same for internal service-to-service calls.
 - Use the API Gateway for frontend requests so service auth headers are set consistently.
+- The gateway and services emit structured request, authentication, WebSocket, task, Celery, and upload logs. Do not log tokens, passwords, or other secrets.
 
 ## Useful Commands
 
