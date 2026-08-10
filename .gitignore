@@ -1,3 +1,6 @@
+# Local environment variables
+.env
+
 # Python virtual environments, bytecode, and caches
 env/
 venv/
